@@ -133,3 +133,28 @@ docker build -f team_members/a/openai_docker/Dockerfile -t myapp .
 
 cd Bidding-Mate/team_members/a/openai_docker
 docker run myapp 
+
+docker run -it myapp bash 
+ls -al /work
+
+#6) 로컬에서도 벡터DB 파일을 보고 싶다면?
+#두 가지 방법이 있어.
+
+#방법 A) Docker volume으로 로컬에 저장
+docker run -v $(pwd)/data:/work/data myapp
+
+#########################################################################################
+docker images
+# 태그없는 이미지 삭제
+docker image prune
+
+docker ps -a
+# 태그없는 컨테이너 삭제
+docker container prune
+
+docker image rm myapp
+cd /home/areum/Bidding-Mate
+docker build -f team_members/a/openai_docker/Dockerfile -t myapp .
+
+#실행 끝나면 컨테이너 기록이 자동 삭제
+docker run --rm myapp
