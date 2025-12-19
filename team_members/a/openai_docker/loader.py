@@ -1,4 +1,6 @@
-import os, sys, glob, re, fitz, unicodedata
+import os, sys, glob, re, unicodedata
+import pandas as pd
+import fitz # PyMuPDF
 # PyMuPDF 경고 메시지 숨기기 
 devnull = open(os.devnull, 'w') 
 sys.stderr = devnull
@@ -16,26 +18,43 @@ def clean_text_final(text: str) -> str:
     return text.strip()
 
 def load_documents(raw_dir):
+    # 1. PDF 파일 목록
     pdf_files = glob.glob(os.path.join(raw_dir, "*.pdf"))
     pdf_files_map = {
         unicodedata.normalize("NFC", os.path.basename(f)): f
         for f in pdf_files
     }
+
+    # 2. data_list.csv 로드
+    csv_path = os.path.join(raw_dir, "data_list.csv")
+    df = pd.read_csv(csv_path)
+    pdf_df = df[df["파일형식"] == "pdf"].copy()
+    pdf_df["파일명_normalized"] = pdf_df["파일명"].apply(
+        lambda x: unicodedata.normalize("NFC", x)
+    )
+
     docs = []
-    for fname_nfc, pdf_path in pdf_files_map.items():
-        try:
-            doc = fitz.open(pdf_path)
-            for page_num, page in enumerate(doc):
-                text = clean_text_final(page.get_text())
-                if text:
-                    docs.append({
-                        "file": fname_nfc,
-                        "page": page_num + 1,
-                        "text": text
-                    })
-            doc.close()
-        except Exception as e:
-            print(f"❌ PDF 열기 실패: {fname_nfc} ({e})")
+
+    # 3. PDF와 사업명 매핑
+    for _, row in pdf_df.iterrows():
+        fname_nfc = row["파일명_normalized"]
+        if fname_nfc in pdf_files_map:
+            pdf_path = pdf_files_map[fname_nfc]
+            try:
+                doc = fitz.open(pdf_path)
+                for page_num, page in enumerate(doc):
+                    text = clean_text_final(page.get_text())
+                    if text:
+                        docs.append({
+                            "project": row["사업명"],   # 사업명 추가
+                            "file": fname_nfc,
+                            "page": page_num + 1,
+                            "text": text
+                        })
+                doc.close()
+            except Exception as e:
+                print(f"❌ PDF 열기 실패: {fname_nfc} ({e})")
+
     return docs
 
 '''
