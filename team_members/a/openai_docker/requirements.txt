@@ -8,8 +8,8 @@
 transformers==4.57.3
 
 # Data tools
-pandas
-numpy
+pandas==2.3.3
+numpy==2.3.5
 matplotlib
 scikit-learn
 openpyxl

@@ -156,5 +156,24 @@ docker image rm myapp
 cd /home/areum/Bidding-Mate
 docker build -f team_members/a/openai_docker/Dockerfile -t myapp .
 
-#실행 끝나면 컨테이너 기록이 자동 삭제
-docker run --rm myapp
+#실행 끝나면 컨테이너 기록이 자동 삭제, 챗봇처럼 입력
+docker run -it --rm myapp
+
+
+# 벡터DB(.pkl)은 이미지에 넣지 않고 볼륨으로 마운트
+docker run -it --rm -v $(pwd)/data:/work/data myapp
+docker run -it --rm -v $(pwd)/data:/work/data myapp
+
+docker cp <컨테이너ID>:/path/in/container/vector_db.pkl ./vector_db.pkl
+docker cp <컨테이너ID>:/path/in/container/vector_db.pkl ./vector_db.pkl
+docker cp a2be91090da6:/work/data/vector_db.pkl ./vector_db.pkl
+docker cp a2be91090da6:/work/data/pdf4db.pkl ./pdf4db.pkl
+docker cp a2be91090da6:/work/data/testdb.pkl ./testdb.pkl
+
+docker exec -it a2be91090da6 /bin/bash
+# ls -R /work/data # 너무 많이 나옴
+find / -name "*.pkl" 2>/dev/null 
+
+docker cp a2be91090da6:/work/pdf4db.pkl ./pdf4db.pkl
+docker cp a2be91090da6:/work/testdb.pkl ./testdb.pkl
+
