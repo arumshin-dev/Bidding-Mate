@@ -4,51 +4,34 @@ import numpy as np
 class VectorDB:
     def __init__(self, path="vectordb.pkl"):
         self.path = path
-        self.chunks = []
-        self.vectors = []
+        self.entries = [] # [{...chunk..., "embedding": vector}, ...]
 
         try:
             with open(path, "rb") as f:
-                data = pickle.load(f)
-                self.chunks = data["chunks"]
-                self.vectors = data["vectors"]
+                self.entries = pickle.load(f)
         except:
             pass
 
     def save(self, chunks, vectors):
-        self.chunks = chunks
-        self.vectors = vectors
-        with open(self.path, "wb") as f:
-            pickle.dump({"chunks": chunks, "vectors": vectors}, f)
+        # chunks와 vectors를 합쳐서 저장
+        self.entries = []
+        for chunk, vec in zip(chunks, vectors): 
+            # entry = {**chunk, "embedding": vec} 
+            # vec을 numpy array로 강제 변환 
+            entry = {**chunk, "embedding": np.array(vec, dtype=float)}
+            self.entries.append(entry) 
+        with open(self.path, "wb") as f: 
+            pickle.dump(self.entries, f)
 
     def search(self, query_vector, top_k=3): 
         q = np.array(query_vector) 
         sims = [] 
-        for i, v in enumerate(self.vectors): 
-            v = np.array(v) 
+        for entry in self.entries: 
+            # v = np.array(entry["embedding"]) 
+            v = entry["embedding"] # 이미 numpy array
             sim = np.dot(q, v) / (np.linalg.norm(q) * np.linalg.norm(v)) 
-            sims.append((sim, self.chunks[i])) 
+            sims.append((sim, entry))
             
         sims.sort(reverse=True, key=lambda x: x[0]) 
         return [c for _, c in sims[:top_k]]
-
-'''
-python3 - << 'EOF'
-from vectordb import VectorDB
-from embedder import get_embeddings
-
-chunks = ["테스트 문장입니다.", "두 번째 문장입니다."]
-vectors = get_embeddings(chunks)
-
-db = VectorDB("testdb.pkl")
-db.save(chunks, vectors)
-
-query = "테스트"
-query_vec = get_embeddings([query])[0]
-
-result = db.search(query_vec, top_k=1)
-print(result)
-EOF
-
-'''
 

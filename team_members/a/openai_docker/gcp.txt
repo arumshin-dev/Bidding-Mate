@@ -177,3 +177,52 @@ find / -name "*.pkl" 2>/dev/null
 docker cp a2be91090da6:/work/pdf4db.pkl ./pdf4db.pkl
 docker cp a2be91090da6:/work/testdb.pkl ./testdb.pkl
 
+# 삭제하고 빌드 docker rmi -f myapp:latest && docker build -t myapp .
+docker rmi -f myapp:latest && \
+docker build -f team_members/a/openai_docker/Dockerfile -t myapp . && \
+docker run -it --rm \
+  -v $(pwd)/data:/work/data \
+  --env-file /home/areum/Bidding-Mate/.env \
+  myapp
+
+------------------------------------
+# 캐시 없이 빌드
+docker build --no-cache -f team_members/a/openai_docker/Dockerfile -t myapp . && \
+docker run -it --rm \
+  -v $(pwd)/data:/work/data \
+  --env-file /home/areum/Bidding-Mate/.env \
+  myapp
+
+--------------------
+cd /home/areum/Bidding-Mate 
+docker images rm myapp
+docker build -f team_members/a/openai_docker/Dockerfile -t myapp .
+
+docker run -it --rm \
+  -v $(pwd)/data:/work/data \
+  --env-file /home/areum/Bidding-Mate/.env \
+  myapp
+--------------------------------------
+  🔹 스크립트로 자동화
+프로젝트 루트에 rebuild.sh 같은 스크립트를 만들어두면 편합니다:
+
+bash
+#!/bin/bash
+set -e
+cd /home/areum/Bidding-Mate
+
+docker rmi -f myapp:latest || true
+docker build -f team_members/a/openai_docker/Dockerfile -t myapp .
+docker run -it --rm \
+  -v $(pwd)/data:/work/data \
+  --env-file /home/areum/Bidding-Mate/.env \
+  myapp
+실행 권한을 주고:
+
+bash
+chmod +x rebuild.sh
+이제는 그냥:
+
+bash
+./rebuild.sh
+만 치면 됩니다.

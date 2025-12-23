@@ -1,43 +1,44 @@
-# def chunk_text(docs, chunk_size=300):
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
+
 def chunk_text(docs, chunk_size=300, overlap=50):
-    chunks = []
+    # RecursiveCharacterTextSplitter 정의
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=overlap,
+        separators=["\n\n", "\n", " ", ""]
+    )
+
+    # 원본 docs는 [{"text": "...", "project": "...", "file": "...", "page": ...}, ...] 형태라고 가정
+    langchain_docs = []
     for doc in docs:
-        text = doc["text"].strip()
-        if not text:
-            continue
-        i = 0
-        chunk_id = 0
-        while i < len(text):
-            chunk_text = text[i:i+chunk_size].strip()
-            if chunk_text:
-                chunks.append({
-                    "project": doc["project"],   # 사업명 추가
+        langchain_docs.append(
+            Document(
+                page_content=doc["text"],
+                metadata={
+                    "project": doc["project"],
                     "file": doc["file"],
-                    "page": doc["page"],
-                    "chunk_id": chunk_id,
-                    "text": chunk_text,
-                    "length": len(chunk_text),
-                    "word_count": len(chunk_text.split())
-                })
-                chunk_id += 1
-            i += chunk_size - overlap   # 오버랩 적용
-    return chunks
+                    "page": doc["page"]
+                }
+            )
+        )
 
-'''
-python3 - << 'EOF'
-from loader import load_documents
-from chunker import chunk_text
-# import pandas as pd
+    # RecursiveCharacterTextSplitter로 청킹
+    chunks = splitter.split_documents(langchain_docs)
 
-raw_dir = "../../../data/raw"
-docs = load_documents(raw_dir)
-chunks = chunk_text(docs, chunk_size=800)
+    # 반환 형식 맞추기 (dict 리스트)
+    results = []
+    chunk_id = 0
+    for c in chunks:
+        results.append({
+            "project": c.metadata["project"],
+            "file": c.metadata["file"],
+            "page": c.metadata["page"],
+            "chunk_id": chunk_id,
+            "text": c.page_content,
+            "length": len(c.page_content),
+            "word_count": len(c.page_content.split())
+        })
+        chunk_id += 1
 
-# chunks_df = pd.DataFrame(chunks)
-# print("총 청크 수:", len(chunks_df))
-# print(chunks_df.head())
-chunks = chunk_text(docs, chunk_size=50)
-print("청크 개수:", len(chunks))
-print("첫 청크:", chunks[0])
-EOF
-'''
+    return results
