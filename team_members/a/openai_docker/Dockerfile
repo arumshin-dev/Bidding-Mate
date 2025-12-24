@@ -16,8 +16,8 @@ RUN pip install --upgrade openai
 # 3) 나머지 코드 전체 복사 
 # COPY . .
 # openai_docker 폴더 전체를 복사
-COPY team_members/a/openai_docker /work
-COPY .env /work/.env
+# COPY team_members/a/openai_docker /work
+# COPY .env /work/.env
 # COPY data /work/data
 
-CMD ["python", "inference.py"]
+# CMD ["python", "inference.py"]

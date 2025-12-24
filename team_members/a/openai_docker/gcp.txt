@@ -226,3 +226,37 @@ chmod +x rebuild.sh
 bash
 ./rebuild.sh
 만 치면 됩니다.
+
+docker ps -a
+docker attach myapp:latest
+
+
+
+
+docker rmi -f chroma:v1.0.0 || true
+docker build -f team_members/a/openai_docker/Dockerfile_chroma -t chroma:v1.0.0 .
+docker run -it --rm \
+  -v $(pwd)/data:/work/data \
+  --env-file /home/areum/Bidding-Mate/.env \
+  chroma:v1.0.0
+
+docker attach chroma:v1.0.0
+
+"docker rmi -f chroma:v1.0.0 || true
+docker build -f team_members/a/openai_docker/Dockerfile_chroma -t chroma:v1.0.0 .
+docker run -it --rm \
+  -v $(pwd)/data:/work/data \
+  -v $(pwd)/team_members/a/chroma_db:/work/chroma_db \
+  --env-file /home/areum/Bidding-Mate/.env \
+  chroma:v1.0.0"
+
+
+
+docker build -f team_members/a/openai_docker/Dockerfile -t a:v1 .
+docker run -it --rm \
+  -v $(pwd)/team_members/a/openai_docker:/work \
+  -v $(pwd)/data:/work/data \
+  -v $(pwd)/team_members/a/chroma_db:/work/chroma_db \
+  --env-file /home/areum/Bidding-Mate/.env \
+  a:v1
+

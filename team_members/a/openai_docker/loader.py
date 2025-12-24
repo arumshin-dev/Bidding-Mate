@@ -66,6 +66,8 @@ def load_documents(raw_dir):
                         docs.append({
                             "project": row["사업명"],   # 사업명 추가
                             "file": fname_nfc,
+                            # "filepath": os.path.join(raw_dir, fname_nfc), # ✅ 경로 포함
+                            "filepath": pdf_path, # ✅ 경로 포함
                             "page": page_num + 1,
                             "text": text
                         })
