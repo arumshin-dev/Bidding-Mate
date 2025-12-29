@@ -18,7 +18,7 @@ class BiddingAgent:
         """
         초기화: DB 로드, LLM 설정, 그래프(Workflow) 빌드
         """
-        self.llm = ChatOpenAI(model=model_name, temperature=0)
+        self.llm = ChatOpenAI(model=model_name)
         self.embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
         
         # 1. DB 연결
@@ -112,3 +112,17 @@ class BiddingAgent:
         inputs = {"question": question}
         result = self.app_workflow.invoke(inputs)
         return result['answer'], result.get('context', [])
+    
+    def ask_with_context(self, question):
+        """
+        Ragas 평가를 위해 질문, 답변, 근거문서(Context)를 딕셔너리로 반환하는 함수
+        """
+        # 1. 실제 우리가 쓰는 get_answer 함수를 호출해서 답변과 근거를 가져옵니다.
+        answer, contexts = self.get_answer(question)
+        
+        # 2. Ragas가 좋아하는 포맷으로 포장해서 줍니다.
+        return {
+            "question": question,
+            "answer": answer,
+            "contexts": contexts  # 리스트 형태 ([문서1, 문서2...])
+        }
