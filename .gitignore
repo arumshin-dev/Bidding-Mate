@@ -10,7 +10,7 @@ __pycache__/
 *.pyc
 venv/
 .venv/
-.ipynb_checkpoints/
+.ipynb_chegckpoints/
 .DS_Store
 Thumbs.db
 .vscode/
@@ -31,3 +31,6 @@ data/
 
 # 5. 도커 관련
 .dockerignore
+
+# Ragas 평가 결과 파일 무시
+ragas_score.csv
