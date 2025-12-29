@@ -11,9 +11,7 @@ from pdfminer.pdfparser import PDFSyntaxError
 # 0. 환경변수 로드 (API KEY 확인용)
 load_dotenv()
 
-# ==========================================
-# 1. 설정 (검증된 경로 적용)
-# ==========================================
+# 1. 설정
 PDF_FOLDER = "../../data/raw/100_PDF"   # PDF 원본 폴더
 DB_PATH = "../../chroma_db_final"       # 최종 DB 저장 경로
 
@@ -22,9 +20,7 @@ if os.path.exists(DB_PATH):
     shutil.rmtree(DB_PATH)
     print(f"기존 DB 폴더({DB_PATH})를 삭제하고 새로 만듭니다.")
 
-# ==========================================
 # 2. 텍스트 청소 함수 (앵무새 죽이기 & 선 제거)
-# ==========================================
 def clean_text(text):
     if not text:
         return ""
@@ -51,9 +47,7 @@ def clean_text(text):
     
     return text.strip()
 
-# ==========================================
 # 3. 문서 로드 및 전처리
-# ==========================================
 documents = []
 print(f"'{PDF_FOLDER}' 폴더에서 PDF 로딩 시작...")
 
@@ -101,10 +95,8 @@ for i, file in enumerate(files):
 
 print(f"\n총 {len(documents)} 페이지 로드 완료!")
 
-# ==========================================
-# 4. 청킹 (Chunking)
-# ==========================================
-print("텍스트 분할(Chunking) 시작...")
+# 4. 청킹
+print("텍스트 분할 시작...")
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000,      # 한 덩어리 크기
     chunk_overlap=200,    # 문맥 유지를 위해 겹치는 구간
@@ -114,10 +106,8 @@ text_splitter = RecursiveCharacterTextSplitter(
 split_docs = text_splitter.split_documents(documents)
 print(f"   -> 총 {len(split_docs)}개의 청크로 분할되었습니다.")
 
-# ==========================================
 # 5. 벡터 DB 저장
-# ==========================================
-print("벡터 DB 저장 중... (데이터 양에 따라 시간이 걸릴 수 있습니다)")
+print("벡터 DB 저장 중...")
 
 # 임베딩 모델 준비
 embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
