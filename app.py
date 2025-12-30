@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 from rag_core import BiddingAgent
 
 # 페이지 설정
@@ -30,11 +31,21 @@ except Exception as e:
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+        
+        # 과거 메세지의 docs가 있다면 다시 그려줍니다.
         if "docs" in message and message["docs"]:
             with st.expander("📚 참고 문서 보기"):
                 for i, doc in enumerate(message["docs"]):
-                    st.markdown(f"**[문서 {i+1}]**")
-                    st.text(doc[:500] + "...")
+                    # rag_core.py에서 딕셔너리 형태로 오므로 키(key)로 접근
+                    full_path = doc.get('source', '파일 경로 없음')
+                    content = doc.get('content', '내용 없음')
+                    
+                    # 경로에서 파일명만 깔끔하게 추출 (예: /data/abc.pdf -> abc.pdf)
+                    file_name = os.path.basename(full_path)
+                    
+                    st.markdown(f"**📄 {i+1}. {file_name}**")
+                    st.text(content[:500] + "...")
+                    st.divider() # 문서 사이 구분선
 
 # 채팅 입력 및 처리
 if prompt := st.chat_input("궁금한 점을 물어보세요..."):
@@ -57,10 +68,18 @@ if prompt := st.chat_input("궁금한 점을 물어보세요..."):
                 if docs and len(docs) > 0:
                     with st.expander("📚 참고 문서 보기"):
                         for i, doc in enumerate(docs):
-                            st.markdown(f"**[문서 {i+1}]**")
-                            st.text(doc[:500] + "...")
+                            # 딕셔너리에서 데이터 추출
+                            full_path = doc.get('source', '파일 경로 없음')
+                            content = doc.get('content', '내용 없음')
+                            file_name = os.path.basename(full_path)
+                            
+                            # 제목 출력 (아이콘 + 파일명)
+                            st.markdown(f"**📄 {i+1}. {file_name}**")
+                            # 내용 출력
+                            st.text(content[:500] + "...")
+                            st.divider()
 
-                # 3. 세션 상태에 답변과 문서를 함께 저장 (docs 포함이 핵심!)
+                # 3. 세션 상태에 답변과 문서를 함께 저장
                 st.session_state.messages.append({
                     "role": "assistant", 
                     "content": answer, 
